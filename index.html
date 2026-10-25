@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jogo de Nave Espacial</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0d0e15;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            flex-direction: column;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            width: 95vw;
+            max-width: 500px;
+            height: 350px;
+            background: #050508;
+            border: 4px solid #334155;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        #menu {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 11, 18, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            box-sizing: border-box;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        h1 { margin: 0 0 10px 0; color: #38bdf8; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(56,189,248,0.4); }
+        .info-text { font-size: 13px; color: #94a3b8; margin-bottom: 12px; font-weight: bold; }
+        .row { display: flex; gap: 10px; width: 100%; max-width: 340px; margin-bottom: 10px; }
+        .field { flex: 1; display: flex; flex-direction: column; }
+        label { margin-bottom: 4px; font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: bold; }
+        select {
+            padding: 8px;
+            background: #1e293b;
+            color: white;
+            border: 2px solid #38bdf8;
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button.start-btn {
+            margin-top: 10px;
+            padding: 10px 40px;
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);
+            text-transform: uppercase;
+        }
+        #controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 95vw;
+            max-width: 500px;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        .dir-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btn {
+            background: #1e293b;
+            border: 2px solid #475569;
+            color: white;
+            font-size: 22px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+            width: 65px;
+            height: 65px;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:active {
+            background: #38bdf8;
+            color: #0f172a;
+            border-color: #38bdf8;
+        }
+        .shoot-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-shoot {
+            background: #ef4444;
+            border: 2px solid #f87171;
+            color: white;
+            font-size: 28px;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .btn-shoot:active {
+            background: #b91c1c;
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="info-text" id="live-score" style="display:none; font-size:16px;">PONTOS: 0 | PASSARAM: 0/5 | RECORDE: 0</div>
+
+    <div id="game-container">
+        <div id="menu">
+            <h1>Space Shooter</h1>
+            <div class="info-text">👑 RECORDE MÁXIMO: <span id="menu-highscore">0</span></div>
+            
+            <div class="row">
+                <div class="field">
+                    <label for="body-color">Cor do Corpo</label>
+                    <select id="body-color">
+                        <option value="#38bdf8">Azul Celeste</option>
+                        <option value="#22c55e">Verde</option>
+                        <option value="#eab308">Amarelo</option>
+                        <option value="#a855f7">Roxo</option>
+                        <option value="#f43f5e">Rosa</option>
+                        <option value="#f97316">Laranja</option>
+                        <option value="#ffffff">Branco</option>
+                        <option value="#64748b">Cinza</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="wing-color">Cor das Asas</label>
+                    <select id="wing-color">
+                        <option value="#eab308">Amarelo</option>
+                        <option value="#38bdf8">Azul Celeste</option>
+                        <option value="#22c55e">Verde</option>
+                        <option value="#a855f7">Roxo</option>
+                        <option value="#f43f5e">Rosa</option>
+                        <option value="#f97316">Laranja</option>
+                        <option value="#ffffff">Branco</option>
+                        <option value="#64748b">Cinza</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row" style="max-width:340px;">
+                <div class="field">
+                    <label for="speed-select">Velocidade Inimiga</label>
+                    <select id="speed-select">
+                        <option value="1.5">Lento</option>
+                        <option value="3" selected>Padrão</option>
+                        <option value="5">Rápido</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="start-btn" onclick="startGame()">JOGAR</button>
+        </div>
+
+        <canvas id="game" width="500" height="350"></canvas>
+    </div>
+
+    <div id="controls">
+        <div class="dir-buttons">
+            <div class="btn" id="btn-up">▲</div>
+            <div class="btn" id="btn-down">▼</div>
+        </div>
+        <div class="shoot-container">
+            <div class="btn btn-shoot" id="btn-shoot">🎯</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d');
+        const menu = document.getElementById('menu');
+        const bodyColorSelect = document.getElementById('body-color');
+        const wingColorSelect = document.getElementById('wing-color');
+        const speedSelect = document.getElementById('speed-select');
+        const menuHighscore = document.getElementById('menu-highscore');
+        const liveScore = document.getElementById('live-score');
+
+        let score = 0;
+        let escapedCount = 0;
+        let gameActive = false;
+        
+        function setCookie(name, value) {
+            const d = new Date();
+            d.setTime(d.getTime() + (365*24*60*60*1000));
+            document.cookie = name + "=" + value + ";expires="+ d.toUTCString() + ";path=/;SameSite=Lax";
+        }
+
+        function getCookie(name) {
+            const prefix = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i].trim();
+                if (c.indexOf(prefix) === 0) return c.substring(prefix.length, c.length);
+            }
+            return 0;
+        }
+
+        let highscore = parseInt(getCookie('nav_highscore')) || 0;
+        menuHighscore.textContent = highscore;
+
+        let player = { x: 30, y: 150, w: 35, h: 25, speed: 4, movingUp: false, movingDown: false, bodyC: '#38bdf8', wingC: '#eab308' };
+        let lasers = [];
+        let enemies = [];
+        let enemySpeedSetting = 3;
+
+        function startGame() {
+            player.bodyC = bodyColorSelect.value;
+            player.wingC = wingColorSelect.value;
+            enemySpeedSetting = parseFloat(speedSelect.value);
+            
+            menu.style.display = 'none';
+            liveScore.style.display = 'block';
+            
+            score = 0;
+            escapedCount = 0;
+            player.y = 150;
+            lasers = [];
+            enemies = [];
+            
+            for(let i=0; i<3; i++) { spawnEnemy(600 + i*120); }
+            
+            updateScoreText();
+            gameActive = true;
+        }
+
+        function spawnEnemy(startX) {
+            let xPos = startX !== undefined ? startX : canvas.width + Math.random()*50;
+            enemies.push({
+                x: xPos,
+                y: Math.random() * (canvas.height - 40) + 10,
+                w: 30,
+                h: 20,
+                speed: enemySpeedSetting + (Math.random() * 0.5)
+            });
+        }
+
+        function updateScoreText() {
+            liveScore.innerHTML = "PONTOS: " + score + " | PASSARAM: " + escapedCount + "/5 | RECORDE: " + highscore;
+        }
+
+        function shootLaser() {
+            if(!gameActive) return;
+            lasers.push({ x: player.x + player.w, y: player.y + player.h/2 - 2, w: 10, h: 4, speed: 7 });
+        }
+
+        function gameOver() {
+            gameActive = false;
+            if (score > highscore) {
+                highscore = score;
+                setCookie('nav_highscore', highscore);
+            }
+            menuHighscore.textContent = highscore;
+            menu.style.display = 'flex';
+            liveScore.style.display = 'none';
+        }
+
+        function rectIntersect(r1, r2) {
+            return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y);
+        }
+
+        function loop() {
+            requestAnimationFrame(loop);
+            if (!gameActive) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#ffffff';
+            for(let i=0; i<5; i++) { ctx.fillRect((Date.now()/10 + i*100)%canvas.width, (i*70)%canvas.height, 2, 2); }
+
+            if (player.movingUp && player.y > 0) player.y -= player.speed;
+            if (player.movingDown && player.y < canvas.height - player.h) player.y += player.speed;
+
+            ctx.fillStyle = player.wingC;
+            ctx.fillRect(player.x, player.y, 8, player.h);
+            ctx.fillStyle = player.bodyC;
+            ctx.fillRect(player.x + 8, player.y + 5, player.w - 8, player.h - 10);
+
+            ctx.fillStyle = '#38bdf8';
+            for (let i = lasers.length - 1; i >= 0; i--) {
+                let l = lasers[i];
+                l.x += l.speed;
+                ctx.fillRect(l.x, l.y, l.w, l.h);
+                if (l.x > canvas.width) lasers.splice(i, 1);
+            }
+
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                let e = enemies[i];
+                e.x -= e.speed;
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(e.x + e.w - 8, e.y, 8, e.h);
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(e.x, e.y + 4, e.w - 8, e.h - 8);
+
+                if (e.x + e.w < 0) {
+                    enemies.splice(i, 1);
+                    escapedCount++;
+                    updateScoreText();
+                    if (escapedCount >= 5) { gameOver(); return; }
+                    spawnEnemy();
+                    continue;
+                }
+
+                for (let j = lasers.length - 1; j >= 0; j--) {
+                    if (rectIntersect(lasers[j], e)) {
+                        lasers.splice(j, 1);
+                        enemies.splice(i, 1);
+                        score++;
+                        if (score > highscore) highscore = score;
+                        updateScoreText();
+                        spawnEnemy();
+                        break;
+                    }
+                }
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.keyCode === 38) player.movingUp = true;
+            if (e.keyCode === 40) player.movingDown = true;
+            if (e.keyCode === 32) { e.preventDefault(); shootLaser(); }
+        });
+        document.addEventListener('keyup', function(e) {
+            if (e.keyCode === 38) player.movingUp = false;
+            if (e.keyCode === 40) player.movingDown = false;
+        });
+
+        const btnUp = document.getElementById('btn-up');
+        const btnDown = document.getElementById('btn-down');
+        const btnShoot = document.getElementById('btn-shoot');
+
+        btnUp.addEventListener('touchstart', function(e) { e.preventDefault(); player.movingUp = true; });
+        btnUp.addEventListener('touchend', function(e) { e.preventDefault(); player.movingUp = false; });
+        btnDown.addEventListener('touchstart', function(e) { e.preventDefault(); player.movingDown = true; });
+        btnDown.addEventListener('touchend', function(e) { e.preventDefault(); player.movingDown = false; });
+        btnShoot.addEventListener('touchstart', function(e) { e.preventDefault(); shootLaser(); });
+
+        btnUp.addEventListener('mousedown', function() { player.movingUp = true; });
+        btnUp.addEventListener('mouseup', function() { player.movingUp = false; });
+        btnDown.addEventListener('mousedown', function() { player.movingDown = true; });
+        btnDown.addEventListener('mouseup', function() { player.movingDown = false; });
+        btnShoot.addEventListener('click', shootLaser);
+
+        requestAnimationFrame(loop);
+    </script>
+</body>
+</html>
